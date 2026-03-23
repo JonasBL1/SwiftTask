@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "256691138697",
+    "project_id": "swifttask-69978",
+    "storage_bucket": "swifttask-69978.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256691138697:android:aeb7bfd08fab414fdb1658",
+        "android_client_info": {
+          "package_name": "com.example.swifttask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuIo5buO0Vxyb_G4H3z62LhbpUT7e919k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
