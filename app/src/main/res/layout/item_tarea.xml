@@ -4,39 +4,77 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="16dp"
         android:gravity="center_vertical">
 
+        <!-- 1. Checkbox a la izquierda -->
         <CheckBox
             android:id="@+id/cbTarea"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:buttonTint="#4285F4" />
 
-        <TextView
-            android:id="@+id/tvTareaTitulo"
+        <!-- 2. Contenedor de Textos (Ocupa todo el espacio medio) -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Ejemplo de tarea"
-            android:textSize="18sp"
-            android:textColor="#333333"
-            android:layout_marginStart="8dp"/>
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
 
+            <TextView
+                android:id="@+id/tvTituloTarea"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Título de la tarea"
+                android:textColor="#1F1F1F"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tvAsignatura"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Materia"
+                    android:textSize="12sp"
+                    android:background="#E8F0FE"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="#1967D2" />
+
+                <TextView
+                    android:id="@+id/tvFecha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vence: --/--"
+                    android:textSize="12sp"
+                    android:layout_marginStart="8dp"
+                    android:textColor="#D93025" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 3. Icono de eliminar a la derecha -->
         <ImageButton
             android:id="@+id/btnEliminar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_delete"
-            app:tint="#FF5252" />
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="#5F6368" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

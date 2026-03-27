@@ -1,7 +1,10 @@
-package com.example.swifttask
+package com.example.swifttask // Asegúrate de que este sea tu package real
 
 data class Tarea(
-    val id: String? = null,        // El ID único que le dará Firebase
-    val titulo: String? = null,    // El texto de la tarea
-    val completada: Boolean = false // Si está marcada o no
+    val id: String? = null,
+    val titulo: String = "",
+    val asignatura: String = "Personal", // Por defecto será Personal
+    val fechaLimite: String = "",       // Aquí guardaremos el deadline
+    val esRepetitiva: Boolean = false,
+    val completada: Boolean = false
 )
