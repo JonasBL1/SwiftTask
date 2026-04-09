@@ -1,9 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.SwiftTask" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/azul_primario</item>
+        <item name="android:windowBackground">@color/background_app</item>
+        <item name="android:statusBarColor">@color/background_app</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>
 
     <style name="Theme.SwiftTask" parent="Base.Theme.SwiftTask" />
+
+    <style name="Theme.SwiftTask.NoActionBar" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/azul_primario</item>
+        <item name="android:windowBackground">@color/background_app</item>
+    </style>
 </resources>

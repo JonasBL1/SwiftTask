@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <color name="azul_primario">#0061BD</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="azul_primario">#0B57D0</color>
-    <color name="azul_claro_fondo">#F8FAFD</color>
-    <color name="blanco">#FFFFFF</color>
-    <color name="gris_texto_suave">#5F6368</color>
+    <color name="blanco">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- Colores Semánticos Light -->
+    <color name="background_app">#F8FAFC</color>
+    <color name="surface_app">#FFFFFF</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="border_color">#E2E8F0</color>
+    <color name="input_background">#F1F5F9</color>
 </resources>

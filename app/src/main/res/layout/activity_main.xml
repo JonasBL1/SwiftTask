@@ -1,45 +1,342 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/azul_claro_fondo"> <!-- FONDO DE LA APP -->
+    android:background="@color/background_app">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:elevation="4dp"> <!-- SOMBRA BAJO LA BARRA -->
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/azul_primario"
-            app:title="SwiftTask"
-            app:titleTextColor="@color/blanco"
-            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="16dp"
+            app:layout_scrollFlags="scroll|enterAlways">
 
+            <!-- Toolbar Personalizada -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/btnMenu"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:src="@android:drawable/ic_menu_sort_by_size"
+                    app:tint="@color/text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/app_name"
+                    android:textColor="@color/azul_primario"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnProfile"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/azul_primario"
+                    app:strokeWidth="2dp">
+                    <ImageView
+                        android:id="@+id/btnProfileImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_user"
+                        android:padding="8dp"
+                        android:scaleType="centerInside"
+                        app:tint="@color/azul_primario" />
+                </com.google.android.material.card.MaterialCardView>
+            </RelativeLayout>
+
+            <!-- Saludo y Título -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/mantente"
+                android:textColor="@color/text_primary"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:lineHeight="44sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/agil"
+                android:textColor="@color/azul_primario"
+                android:textSize="48sp"
+                android:textStyle="bold|italic"
+                android:lineHeight="44sp" />
+
+            <TextView
+                android:id="@+id/tvTareaCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/tareas_pendientes"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
+
+            <!-- Barra de Progreso -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tu_progreso"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tvPorcentaje"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:text="0%"
+                        android:textSize="12sp"
+                        android:textColor="@color/azul_primario"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progressTareas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indicatorColor="@color/azul_primario"
+                    app:trackColor="@color/input_background"
+                    app:trackThickness="8dp"
+                    app:trackCornerRadius="4dp"
+                    android:progress="0" />
+            </LinearLayout>
+
+            <!-- Filtros Horizontal -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupFiltros"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:selectionRequired="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTodas"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/todas"
+                        android:checked="true"
+                        app:chipBackgroundColor="@color/azul_primario"
+                        android:textColor="@color/white"
+                        app:chipCornerRadius="20dp"
+                        app:chipStrokeWidth="0dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipUniversidad"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/universidad"
+                        app:chipBackgroundColor="@color/input_background"
+                        android:textColor="@color/text_secondary"
+                        app:chipCornerRadius="20dp"
+                        app:chipStrokeWidth="0dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipPersonales"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/personales"
+                        app:chipBackgroundColor="@color/input_background"
+                        android:textColor="@color/text_secondary"
+                        app:chipCornerRadius="20dp"
+                        app:chipStrokeWidth="0dp" />
+
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Lista de Tareas -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTareas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:paddingTop="8dp"
+        android:paddingHorizontal="24dp"
         android:paddingBottom="100dp"
-        android:clipToPadding="false" />
+        android:clipToPadding="false"
+        android:layoutAnimation="@anim/layout_animation_fall_down"
+        tools:listitem="@layout/item_tarea" />
 
+    <!-- Estado Vacío (Ahora con Scroll) -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/layoutEmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingBottom="100dp">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@android:drawable/ic_menu_today"
+                app:tint="@color/azul_primario"
+                android:alpha="0.2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/todo_listo"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/mensaje_vacio"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Navigation Simulado (Diseño del Prototipo) -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="40dp"
+        app:cardElevation="12dp"
+        app:cardBackgroundColor="@color/surface_app"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Tareas -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/azul_primario">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="12dp"
+                        android:src="@android:drawable/ic_menu_agenda"
+                        app:tint="@color/white" />
+                </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tareas"
+                    android:textSize="10sp"
+                    android:textColor="@color/azul_primario"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+
+
+            <!-- Ajustes -->
+            <LinearLayout
+                android:id="@+id/btnSettings"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_manage"
+                    app:tint="@color/text_secondary" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ajustes"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Botón Flotante -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:contentDescription="Agregar nueva tarea"
         android:id="@+id/fabAgregar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="100dp"
         app:srcCompat="@android:drawable/ic_input_add"
         app:backgroundTint="@color/azul_primario"
         app:tint="@color/blanco"
-        app:elevation="6dp"/>
+        app:fabSize="normal"
+        app:elevation="4dp"
+        app:borderWidth="0dp"
+        android:contentDescription="@string/agregar_tarea" />
+
+    <nl.dionsegijn.konfetti.xml.KonfettiView
+        android:id="@+id/konfettiView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

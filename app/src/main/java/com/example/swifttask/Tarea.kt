@@ -1,10 +1,11 @@
-package com.example.swifttask // Asegúrate de que este sea tu package real
+package com.example.swifttask
 
 data class Tarea(
     val id: String? = null,
     val titulo: String = "",
-    val asignatura: String = "Personal", // Por defecto será Personal
-    val fechaLimite: String = "",       // Aquí guardaremos el deadline
+    val asignatura: String = "Personal",
+    val fechaLimite: String = "",
+    val prioridad: String = "Media", // Alta, Media, Baja
     val esRepetitiva: Boolean = false,
-    val completada: Boolean = false
+    var completada: Boolean = false // Cambiado a var para permitir el swipe de completar
 )
