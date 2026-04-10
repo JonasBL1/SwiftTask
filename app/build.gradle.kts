@@ -1,17 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.services)
 }
 
 android {
     namespace = "com.example.swifttask"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.swifttask"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -33,8 +32,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
+    buildFeatures {
+        resValues = true
     }
 }
 
@@ -47,9 +46,9 @@ dependencies {
 
     // Firebase
     implementation(platform(libs.firebase.bom))
-    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
-    implementation("com.google.firebase:firebase-common-ktx")
+    implementation(libs.firebase.common)
     
     // Google Sign-In
     implementation(libs.play.services.auth)
