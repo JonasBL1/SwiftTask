@@ -65,4 +65,5 @@
     <string name="sincronizado">Sincronizado con la nube</string>
     <string name="error_sincronizacion">Error de sincronización</string>
     <string name="ultima_sincronizacion">Última sinc: %1$s</string>
+    <string name="buscar_tareas">Buscar tareas...</string>
 </resources>

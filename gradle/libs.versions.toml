@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "8.2.2"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -7,14 +7,15 @@ espressoCore = "3.6.1"
 appcompat = "1.7.1"
 material = "1.12.0"
 activity = "1.9.3"
-constraintlayout = "2.1.4"
+constraintlayout = "2.2.0"
 googleGmsGoogleServices = "4.4.2"
 firebaseDatabase = "21.0.0"
+firebaseBom = "33.1.1"
 glide = "4.16.0"
 konfetti = "2.0.4"
-workRuntime = "2.9.0"
+workRuntime = "2.9.1"
 playServicesAuth = "21.2.0"
-kotlin = "1.9.22"
+kotlin = "1.9.24"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -26,6 +27,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabase" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 konfetti = { group = "nl.dionsegijn", name = "konfetti-xml", version.ref = "konfetti" }

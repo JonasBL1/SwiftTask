@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var prioridadSeleccionada = "Media"
     private var filtroActual = "Todas"
     private var criterioOrdenacion = "Prioridad"
+    private var queryBusqueda = ""
     private val listaCategorias = mutableListOf<Categoria>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         val btnMenu = findViewById<android.view.View>(R.id.btnMenu)
         val btnProfile = findViewById<android.view.View>(R.id.btnProfile)
         val ivProfile = findViewById<android.widget.ImageView>(R.id.btnProfileImage) // Asumiendo que añadimos el ID
+        val etBuscar = findViewById<android.widget.EditText>(R.id.etBuscar)
 
         if (user != null) {
             user.photoUrl?.let {
@@ -70,6 +72,15 @@ class MainActivity : AppCompatActivity() {
                     .into(ivProfile)
             }
         }
+
+        etBuscar.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                queryBusqueda = s.toString().trim()
+                aplicarFiltro()
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
 
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -200,12 +211,19 @@ class MainActivity : AppCompatActivity() {
     private fun aplicarFiltro() {
         listaTareasVisibles.clear()
 
-        if (filtroActual == "Todas") {
-            listaTareasVisibles.addAll(listaTareasCompleta)
+        val filtradasPorCategoria = if (filtroActual == "Todas") {
+            listaTareasCompleta
         } else {
-            val filtradas = listaTareasCompleta.filter { it.asignatura == filtroActual }
-            listaTareasVisibles.addAll(filtradas)
+            listaTareasCompleta.filter { it.asignatura == filtroActual }
         }
+
+        val filtradasFinales = if (queryBusqueda.isEmpty()) {
+            filtradasPorCategoria
+        } else {
+            filtradasPorCategoria.filter { it.titulo.contains(queryBusqueda, ignoreCase = true) }
+        }
+
+        listaTareasVisibles.addAll(filtradasFinales)
 
         ordenarTareas()
         adapter.updateLista(listaTareasVisibles)

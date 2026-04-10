@@ -46,7 +46,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation(platform(libs.firebase.bom))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation(libs.firebase.database)
     implementation("com.google.firebase:firebase-common-ktx")
