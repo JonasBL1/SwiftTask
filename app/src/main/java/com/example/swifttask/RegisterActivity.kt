@@ -7,9 +7,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 
 class RegisterActivity : AppCompatActivity() {
@@ -20,7 +18,7 @@ class RegisterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_register)
 
         // Inicializamos Firebase Auth
-        auth = Firebase.auth
+        auth = FirebaseAuth.getInstance()
 
         // Enlazamos los componentes con los IDs de tu XML
         val btnCrearCuenta = findViewById<Button>(R.id.btnCrearCuenta)
