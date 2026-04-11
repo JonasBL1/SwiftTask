@@ -27,17 +27,21 @@ class LoginActivity : AppCompatActivity() {
 
     // Nuevo Launcher para Google Sign-In (Reemplaza startActivityForResult)
     private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        progressBar.visibility = View.GONE
         if (result.resultCode == RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)!!
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                progressBar.visibility = View.GONE
-                Toast.makeText(this, "Error de Google: ${e.message}", Toast.LENGTH_SHORT).show()
+                val errorMsg = when (e.statusCode) {
+                    12500 -> "Error 12500: Revisa el SHA-1 en Firebase."
+                    10 -> "Error 10: Client ID incorrecto o SHA-1 no registrado."
+                    7 -> "Error de red: Revisa tu conexión."
+                    else -> "Error de Google (${e.statusCode}): ${e.message}"
+                }
+                Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
             }
-        } else {
-            progressBar.visibility = View.GONE
         }
     }
 
@@ -98,15 +102,18 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
+        progressBar.visibility = View.VISIBLE
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 progressBar.visibility = View.GONE
                 if (task.isSuccessful) {
-                    startActivity(Intent(this, MainActivity::class.java))
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                     finish()
                 } else {
-                    Toast.makeText(this, "Error de Firebase: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Error de Firebase: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
     }

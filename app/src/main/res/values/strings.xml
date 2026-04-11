@@ -72,4 +72,19 @@
     <string name="error_sincronizacion">Error de sincronización</string>
     <string name="ultima_sincronizacion">Última sinc: %1$s</string>
     <string name="buscar_tareas">Buscar tareas...</string>
+    <string name="unete_al_flujo">Únete al Flujo</string>
+    <string name="crea_tu_cuenta">Crea tu cuenta para empezar a organizar tu vida</string>
+    <string name="nombre_completo">Nombre completo</string>
+    <string name="ingresa_tu_nombre">Ingresa tu nombre</string>
+    <string name="correo_electronico">Correo electrónico</string>
+    <string name="contrasena">Contraseña</string>
+    <string name="min_8_caracteres">Mín. 8 caracteres</string>
+    <string name="crear_cuenta">Crear cuenta</string>
+    <string name="o_continua_con">O CONTINUA CON</string>
+    <string name="ya_tienes_cuenta">¿Ya tienes una cuenta? Iniciar Sesión</string>
+    <string name="icono_menu">Icono de menú</string>
+    <string name="foto_perfil">Foto de perfil</string>
+    <string name="icono_busqueda">Icono de búsqueda</string>
+    <string name="imagen_vacio">Imagen de lista vacía</string>
+    <string name="icono_ajustes">Icono de ajustes</string>
 </resources>

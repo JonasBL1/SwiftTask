@@ -7,80 +7,99 @@
     android:background="@color/background_app">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:elevation="0dp">
+        android:background="@color/background_app"
+        app:elevation="0dp"
+        app:liftOnScroll="true">
 
+        <!-- 1. BARRA SUPERIOR (Móvil) -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:paddingHorizontal="24dp"
+            android:background="@color/background_app"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMenu"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_centerVertical="true"
+                app:icon="@drawable/ic_menu_custom"
+                app:iconSize="24dp"
+                app:iconTint="@color/azul_primario"
+                android:contentDescription="@string/icono_menu" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnProfile"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/azul_primario"
+                app:strokeWidth="2dp">
+
+                <ImageView
+                    android:id="@+id/btnProfileImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_user"
+                    android:contentDescription="@string/foto_perfil" />
+            </com.google.android.material.card.MaterialCardView>
+        </RelativeLayout>
+
+        <!-- 2. TÍTULOS Y SALUDO (Móvil) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
-            android:paddingTop="16dp"
-            app:layout_scrollFlags="scroll|enterAlways">
+            app:layout_scrollFlags="scroll">
 
-            <!-- Toolbar Personalizada -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:id="@+id/btnMenu"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_sort"
-                    app:tint="@color/text_primary" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:text="@string/app_name"
-                    android:textColor="@color/azul_primario"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnProfile"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_alignParentEnd="true"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/azul_primario"
-                    app:strokeWidth="2dp">
-                    <ImageView
-                        android:id="@+id/btnProfileImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_user"
-                        android:scaleType="centerCrop" />
-                </com.google.android.material.card.MaterialCardView>
-            </RelativeLayout>
-
-            <!-- Saludo y Título -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:text="@string/app_name"
+                android:textColor="@color/azul_primario"
+                android:textSize="20sp"
+                android:layout_marginTop="8dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:lineSpacingExtra="16sp"
                 android:text="@string/mantente"
                 android:textColor="@color/text_primary"
                 android:textSize="48sp"
-                android:textStyle="bold"
-                android:lineHeight="44sp" />
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:lineSpacingExtra="16sp"
                 android:text="@string/agil"
                 android:textColor="@color/azul_primario"
                 android:textSize="48sp"
-                android:textStyle="bold|italic"
-                android:lineHeight="44sp" />
+                android:textStyle="bold|italic" />
+        </LinearLayout>
+
+        <!-- 3. HERRAMIENTAS (Sticky Header) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="16dp"
+            android:background="@color/background_app"
+            app:elevation="4dp">
 
             <TextView
                 android:id="@+id/tvTareaCount"
@@ -91,29 +110,29 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="16sp" />
 
-            <!-- Barra de Búsqueda -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
+                app:cardBackgroundColor="@color/input_background"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
                 app:strokeColor="@color/border_color"
-                app:cardBackgroundColor="@color/input_background">
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:paddingHorizontal="16dp">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_search"
-                        app:tint="@color/text_secondary" />
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@string/icono_busqueda" />
 
                     <EditText
                         android:id="@+id/etBuscar"
@@ -125,13 +144,12 @@
                         android:inputType="text"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
-                        android:textSize="14sp"
                         android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_secondary" />
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="14sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Barra de Progreso -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -141,22 +159,25 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/tu_progreso"
-                        android:textSize="12sp"
                         android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/tvPorcentaje"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:text="0%"
-                        android:textSize="12sp"
+                        android:text="@string/porcentaje_progreso"
                         android:textColor="@color/azul_primario"
-                        android:textStyle="bold" />
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="0%" />
                 </RelativeLayout>
 
                 <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -164,14 +185,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:progress="0"
                     app:indicatorColor="@color/azul_primario"
                     app:trackColor="@color/input_background"
-                    app:trackThickness="8dp"
                     app:trackCornerRadius="4dp"
-                    android:progress="0" />
+                    app:trackThickness="8dp" />
             </LinearLayout>
 
-            <!-- Filtros Horizontal -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -182,46 +202,9 @@
                     android:id="@+id/chipGroupFiltros"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="true">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipTodas"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/todas"
-                        android:checked="true"
-                        app:chipBackgroundColor="@color/azul_primario"
-                        android:textColor="@color/white"
-                        app:chipCornerRadius="20dp"
-                        app:chipStrokeWidth="0dp" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipUniversidad"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/universidad"
-                        app:chipBackgroundColor="@color/input_background"
-                        android:textColor="@color/text_secondary"
-                        app:chipCornerRadius="20dp"
-                        app:chipStrokeWidth="0dp" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPersonales"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/personales"
-                        app:chipBackgroundColor="@color/input_background"
-                        android:textColor="@color/text_secondary"
-                        app:chipCornerRadius="20dp"
-                        app:chipStrokeWidth="0dp" />
-
-                </com.google.android.material.chip.ChipGroup>
+                    app:selectionRequired="true"
+                    app:singleSelection="true" />
             </HorizontalScrollView>
-
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -230,12 +213,12 @@
         android:id="@+id/rvTareas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:paddingHorizontal="24dp"
-        android:paddingBottom="100dp"
         android:clipToPadding="false"
         android:layoutAnimation="@anim/layout_animation_fall_down"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="100dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/item_tarea" />
 
     <!-- Estado Vacío (Ahora con Scroll) -->
@@ -257,9 +240,10 @@
             <ImageView
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                android:src="@drawable/abc_btn_check_to_on_mtrl_015"
+                android:src="@drawable/ic_tasks"
                 app:tint="@color/azul_primario"
-                android:alpha="0.2" />
+                android:alpha="0.2"
+                android:contentDescription="@string/imagen_vacio" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -296,7 +280,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:gravity="center"
+            android:baselineAligned="false">
 
             <!-- Tareas -->
             <LinearLayout
@@ -316,7 +301,8 @@
                         android:layout_height="match_parent"
                         android:padding="12dp"
                         android:src="@drawable/ic_tasks"
-                        app:tint="@color/white" />
+                        app:tint="@color/white"
+                        android:contentDescription="@string/tareas" />
                 </com.google.android.material.card.MaterialCardView>
                 <TextView
                     android:layout_width="wrap_content"
@@ -326,8 +312,6 @@
                     android:textColor="@color/azul_primario"
                     android:textStyle="bold" />
             </LinearLayout>
-
-
 
             <!-- Ajustes -->
             <LinearLayout
@@ -344,7 +328,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_settings"
-                    app:tint="@color/text_secondary" />
+                    app:tint="@color/text_secondary"
+                    android:contentDescription="@string/icono_ajustes" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

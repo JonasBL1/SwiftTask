@@ -2,6 +2,20 @@ package com.example.swifttask
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.PopupMenu
+import android.widget.Button
+import android.app.AlertDialog
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.app.PendingIntent
+import android.app.AlarmManager
+import android.app.NotificationManager
+import android.app.NotificationChannel
+import android.content.Context
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,10 +29,6 @@ import com.google.firebase.database.*
 import androidx.core.graphics.toColorInt
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.ExistingWorkPolicy
 import java.util.concurrent.TimeUnit
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -29,6 +39,16 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.activity.result.contract.ActivityResultContracts
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.material.chip.Chip
+import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.materialswitch.MaterialSwitch
+import android.text.TextWatcher
+import android.text.Editable
+import android.content.res.ColorStateList
+import android.provider.Settings
 
 class MainActivity : AppCompatActivity() {
 
@@ -76,13 +96,11 @@ class MainActivity : AppCompatActivity() {
         // 3. View Binding
         val rvTareas = findViewById<RecyclerView>(R.id.rvTareas)
         val fabAgregar = findViewById<FloatingActionButton>(R.id.fabAgregar)
-        val chipGroup = findViewById<ChipGroup>(R.id.chipGroupFiltros)
-        val tvTareaCount = findViewById<android.widget.TextView>(R.id.tvTareaCount)
-        val btnSettings = findViewById<android.view.View>(R.id.btnSettings)
-        val btnMenu = findViewById<android.view.View>(R.id.btnMenu)
-        val btnProfile = findViewById<android.view.View>(R.id.btnProfile)
-        val ivProfile = findViewById<android.widget.ImageView>(R.id.btnProfileImage)
-        val etBuscar = findViewById<android.widget.EditText>(R.id.etBuscar)
+        val btnSettings = findViewById<View>(R.id.btnSettings)
+        val btnMenu = findViewById<View>(R.id.btnMenu)
+        val btnProfile = findViewById<View>(R.id.btnProfile)
+        val ivProfile = findViewById<ImageView>(R.id.btnProfileImage)
+        val etBuscar = findViewById<EditText>(R.id.etBuscar)
 
         // Solicitar permisos de notificación (Android 13+)
         solicitarPermisosNotificacion()
@@ -90,22 +108,24 @@ class MainActivity : AppCompatActivity() {
 
         if (user != null) {
             user.photoUrl?.let {
-                com.bumptech.glide.Glide.with(this)
+                Glide.with(this)
                     .load(it)
                     .placeholder(R.drawable.ic_user)
                     .error(R.drawable.ic_user)
                     .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .override(120, 120) // Forcing higher resolution on resize
                     .into(ivProfile)
             }
         }
 
-        etBuscar.addTextChangedListener(object : android.text.TextWatcher {
+        etBuscar.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 queryBusqueda = s.toString().trim()
                 aplicarFiltro()
             }
-            override fun afterTextChanged(s: android.text.Editable?) {}
+            override fun afterTextChanged(s: Editable?) {}
         })
 
         btnSettings.setOnClickListener {
@@ -190,21 +210,21 @@ class MainActivity : AppCompatActivity() {
         chipGroup.removeAllViews()
 
         for (categoria in listaCategorias) {
-            val chip = com.google.android.material.chip.Chip(this)
+            val chip = Chip(this)
             chip.text = categoria.nombre
             chip.isCheckable = true
             chip.isClickable = true
             
             chip.setChipBackgroundColorResource(android.R.color.transparent)
-            val strokeColor = android.content.res.ColorStateList.valueOf("#E2E8F0".toColorInt())
+            val strokeColor = ColorStateList.valueOf("#E2E8F0".toColorInt())
             chip.chipStrokeColor = strokeColor
             chip.chipStrokeWidth = 2f
-            chip.setTextColor(getColor(R.color.text_secondary))
+            chip.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
             
             if (categoria.nombre == selectedText) {
                 chip.isChecked = true
                 chip.setChipBackgroundColorResource(R.color.azul_primario)
-                chip.setTextColor(getColor(R.color.white))
+                chip.setTextColor(ContextCompat.getColor(this, R.color.white))
                 chip.chipStrokeWidth = 0f
             }
 
@@ -251,7 +271,14 @@ class MainActivity : AppCompatActivity() {
         actualizarContador()
         
         val layoutEmptyState = findViewById<View>(R.id.layoutEmptyState)
-        layoutEmptyState.visibility = if (listaTareasVisibles.isEmpty()) View.VISIBLE else View.GONE
+        val rvTareas = findViewById<View>(R.id.rvTareas)
+        if (listaTareasVisibles.isEmpty()) {
+            layoutEmptyState.visibility = View.VISIBLE
+            rvTareas.visibility = View.GONE
+        } else {
+            layoutEmptyState.visibility = View.GONE
+            rvTareas.visibility = View.VISIBLE
+        }
     }
 
     private fun ordenarTareas() {
@@ -271,7 +298,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun mostrarMenuOrdenacion(view: View) {
-        val popup = android.widget.PopupMenu(this, view)
+        val popup = PopupMenu(this, view)
         popup.menu.add("Prioridad")
         popup.menu.add("Fecha")
         popup.menu.add("Nombre")
@@ -285,9 +312,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun actualizarContador() {
-        val tvTareaCount = findViewById<android.widget.TextView>(R.id.tvTareaCount)
-        val progressTareas = findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.progressTareas)
-        val tvPorcentaje = findViewById<android.widget.TextView>(R.id.tvPorcentaje)
+        val tvTareaCount = findViewById<TextView>(R.id.tvTareaCount)
+        val progressTareas = findViewById<LinearProgressIndicator>(R.id.progressTareas)
+        val tvPorcentaje = findViewById<TextView>(R.id.tvPorcentaje)
 
         val total = listaTareasVisibles.size
         val completadas = listaTareasVisibles.count { it.completada }
@@ -298,11 +325,11 @@ class MainActivity : AppCompatActivity() {
             tvPorcentaje.text = "0%"
         } else {
             tvTareaCount.text = getString(R.string.tareas_completadas, completadas, total)
-            val porcentaje = (completadas * 100) / total
+            val porcentaje = if (total > 0) (completadas * 100) / total else 0
             progressTareas.progress = porcentaje
             tvPorcentaje.text = getString(R.string.porcentaje_progreso, porcentaje)
             
-            if (completadas == total && total > 0) {
+            if (completadas == total) {
                 dispararConfeti()
             }
         }
@@ -313,7 +340,7 @@ class MainActivity : AppCompatActivity() {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.adapterPosition
+                val position = viewHolder.bindingAdapterPosition
                 val tarea = listaTareasVisibles[position]
 
                 if (direction == ItemTouchHelper.RIGHT) {
@@ -322,7 +349,7 @@ class MainActivity : AppCompatActivity() {
                     actualizarTarea(tareaActualizada)
                 } else {
                     // Eliminar
-                    android.app.AlertDialog.Builder(this@MainActivity)
+                    AlertDialog.Builder(this@MainActivity)
                         .setTitle(R.string.eliminar_tarea_tit)
                         .setMessage(R.string.confirmar_eliminar)
                         .setPositiveButton(R.string.eliminar) { _, _ ->
@@ -417,30 +444,22 @@ class MainActivity : AppCompatActivity() {
                 putExtra("id", tarea.id)
             }
 
-            val pendingIntent = android.app.PendingIntent.getBroadcast(
+            val pendingIntent = PendingIntent.getBroadcast(
                 this,
                 tarea.id.hashCode(),
                 intent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    android.app.AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
-            } else {
-                alarmManager.setExact(
-                    android.app.AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
-            }
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
             
-            android.util.Log.d("ALARM", "Alarma programada para: $fechaHoraString")
+            Log.d("ALARM", "Alarma programada para: $fechaHoraString")
             Toast.makeText(this, "Recordatorio programado", Toast.LENGTH_SHORT).show()
 
         } catch (e: Exception) {
@@ -450,14 +469,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun cancelarNotificacion(tareaId: String) {
         val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent = android.app.PendingIntent.getBroadcast(
+        val pendingIntent = PendingIntent.getBroadcast(
             this,
             tareaId.hashCode(),
             intent,
-            android.app.PendingIntent.FLAG_NO_CREATE or android.app.PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         )
         if (pendingIntent != null) {
-            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.cancel(pendingIntent)
         }
     }
@@ -476,11 +495,11 @@ class MainActivity : AppCompatActivity() {
         konfettiView.start(party)
     }
 
-    private fun mostrarDialogoNuevaCategoria(btnCategoria: android.widget.Button) {
-        val builder = android.app.AlertDialog.Builder(this)
+    private fun mostrarDialogoNuevaCategoria(btnCategoria: Button) {
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("Nueva Categoría")
 
-        val input = android.widget.EditText(this)
+        val input = EditText(this)
         input.hint = "Ej. Gimnasio, Trabajo..."
         input.setPadding(50, 40, 50, 40)
         builder.setView(input)
@@ -508,19 +527,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun mostrarDialogoNuevaTarea(tareaAEditar: Tarea? = null) {
-        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.layout_add_tarea, findViewById(android.R.id.content), false)
         dialog.setContentView(view)
 
-        val tvTituloPanel = view.findViewById<android.widget.TextView>(R.id.tvTituloPanel)
-        val etTitulo = view.findViewById<android.widget.EditText>(R.id.etNuevoTitulo)
-        val btnCategoria = view.findViewById<android.widget.Button>(R.id.btnSeleccionarCategoria)
-        val btnPrioridad = view.findViewById<android.widget.Button>(R.id.btnSeleccionarPrioridad)
-        val btnFecha = view.findViewById<android.widget.Button>(R.id.btnSeleccionarFecha)
-        val btnHora = view.findViewById<android.widget.Button>(R.id.btnSeleccionarHora)
-        val switchRecordatorio = view.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switchRecordatorio)
-        val btnGuardar = view.findViewById<android.widget.Button>(R.id.btnGuardarTarea)
-        val btnClose = view.findViewById<android.view.View>(R.id.btnCloseDialog)
+        val tvTituloPanel = view.findViewById<TextView>(R.id.tvTituloPanel)
+        val etTitulo = view.findViewById<EditText>(R.id.etNuevoTitulo)
+        val btnCategoria = view.findViewById<Button>(R.id.btnSeleccionarCategoria)
+        val btnPrioridad = view.findViewById<Button>(R.id.btnSeleccionarPrioridad)
+        val btnFecha = view.findViewById<Button>(R.id.btnSeleccionarFecha)
+        val btnHora = view.findViewById<Button>(R.id.btnSeleccionarHora)
+        val switchRecordatorio = view.findViewById<MaterialSwitch>(R.id.switchRecordatorio)
+        val btnGuardar = view.findViewById<Button>(R.id.btnGuardarTarea)
+        val btnClose = view.findViewById<View>(R.id.btnCloseDialog)
 
         btnClose.setOnClickListener { dialog.dismiss() }
 
@@ -552,7 +571,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnCategoria.setOnClickListener {
-            val popup = android.widget.PopupMenu(this, btnCategoria)
+            val popup = PopupMenu(this, btnCategoria)
             val categoriasParaMenu = listaCategorias.filter { it.nombre != "Todas" }
             for (cat in categoriasParaMenu) {
                 popup.menu.add(cat.nombre)
@@ -574,7 +593,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnPrioridad.setOnClickListener {
-            val popup = android.widget.PopupMenu(this, btnPrioridad)
+            val popup = PopupMenu(this, btnPrioridad)
             val prioridades = listOf(getString(R.string.alta), getString(R.string.media), getString(R.string.baja))
             prioridades.forEach { p -> popup.menu.add(p) }
             popup.setOnMenuItemClickListener { item ->
@@ -590,7 +609,7 @@ class MainActivity : AppCompatActivity() {
             val year = calendario.get(Calendar.YEAR)
             val month = calendario.get(Calendar.MONTH)
             val day = calendario.get(Calendar.DAY_OF_MONTH)
-            val dpd = android.app.DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+            val dpd = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
                 fechaSeleccionada = "$selectedDay/${selectedMonth + 1}/$selectedYear"
                 btnFecha.text = fechaSeleccionada
             }, year, month, day)
@@ -599,10 +618,10 @@ class MainActivity : AppCompatActivity() {
 
         btnHora.setOnClickListener {
             val calendario = Calendar.getInstance()
-            val hour = if (horaSeleccionada.contains(":")) horaSeleccionada.split(":")[0].toInt() else calendario.get(Calendar.HOUR_OF_DAY)
+            val hour = if (horaSeleccionada.contains(":")) horaSeleccionada.split(":")[1].toInt().let { horaSeleccionada.split(":")[0].toInt() } else calendario.get(Calendar.HOUR_OF_DAY)
             val minute = if (horaSeleccionada.contains(":")) horaSeleccionada.split(":")[1].toInt() else calendario.get(Calendar.MINUTE)
             
-            val tpd = android.app.TimePickerDialog(this, { _, selectedHour, selectedMinute ->
+            val tpd = TimePickerDialog(this, { _, selectedHour, selectedMinute ->
                 horaSeleccionada = String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute)
                 btnHora.text = horaSeleccionada
             }, hour, minute, true)
@@ -636,7 +655,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun mostrarDialogoGestionCategorias() {
-        val builder = android.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("Editar Categorías")
         val categoriasNombres = listaCategorias.filter { it.nombre != "Todas" }.map { it.nombre }.toTypedArray()
         builder.setItems(categoriasNombres) { _, which ->
@@ -648,9 +667,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun mostrarDialogoEditarCategoria(categoria: Categoria) {
-        val builder = android.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("Editar: ${categoria.nombre}")
-        val input = android.widget.EditText(this)
+        val input = EditText(this)
         input.setText(categoria.nombre)
         input.setPadding(50, 40, 50, 40)
         builder.setView(input)
@@ -703,7 +722,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 ActivityCompat.shouldShowRequestPermissionRationale(this, permiso) -> {
                     // El usuario lo denegó una vez, explicamos por qué es necesario
-                    android.app.AlertDialog.Builder(this)
+                    AlertDialog.Builder(this)
                         .setTitle("Permiso de Notificaciones")
                         .setMessage("Necesitamos este permiso para avisarte cuando tus tareas venzan.")
                         .setPositiveButton("Aceptar") { _, _ ->
@@ -721,13 +740,13 @@ class MainActivity : AppCompatActivity() {
 
         // Alarmas exactas (Android 12+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
-                android.app.AlertDialog.Builder(this)
+                AlertDialog.Builder(this)
                     .setTitle("Alarmas Exactas")
                     .setMessage("Para que los recordatorios suenen al instante, necesitamos este permiso.")
                     .setPositiveButton("Configurar") { _, _ ->
-                        startActivity(Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                        startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
                     }
                     .setNegativeButton("Omitir", null)
                     .show()
@@ -740,11 +759,11 @@ class MainActivity : AppCompatActivity() {
             val channelId = getString(R.string.notificacion_canal_id)
             val name = getString(R.string.notificacion_canal_nombre)
             val descriptionText = "Canal para recordatorios de tareas"
-            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
-            val channel = android.app.NotificationChannel(channelId, name, importance).apply {
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(channelId, name, importance).apply {
                 description = descriptionText
             }
-            val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
