@@ -195,6 +195,7 @@
 
         <!-- Botón Google -->
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoogleRegister"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "256691138697",
+    "firebase_url": "https://swifttask-69978-default-rtdb.firebaseio.com",
     "project_id": "swifttask-69978",
     "storage_bucket": "swifttask-69978.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.swifttask"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "256691138697-g7iv1s4afevmaodgm7rllgcmeq6v5vpf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.swifttask",
+            "certificate_hash": "13557570c0eeeb162ea7cbeac146b320af05ac4d"
+          }
+        },
+        {
+          "client_id": "256691138697-5dm7jkotu00v25p75h73ovmm1pjfurk8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBuIo5buO0Vxyb_G4H3z62LhbpUT7e919k"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "256691138697-5dm7jkotu00v25p75h73ovmm1pjfurk8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

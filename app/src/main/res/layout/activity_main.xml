@@ -30,7 +30,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_centerVertical="true"
-                    android:src="@android:drawable/ic_menu_sort_by_size"
+                    android:src="@drawable/ic_sort"
                     app:tint="@color/text_primary" />
 
                 <TextView
@@ -58,9 +58,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:src="@drawable/ic_user"
-                        android:padding="8dp"
-                        android:scaleType="centerInside"
-                        app:tint="@color/azul_primario" />
+                        android:scaleType="centerCrop" />
                 </com.google.android.material.card.MaterialCardView>
             </RelativeLayout>
 
@@ -114,7 +112,7 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_search"
+                        android:src="@drawable/ic_search"
                         app:tint="@color/text_secondary" />
 
                     <EditText
@@ -259,7 +257,7 @@
             <ImageView
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                android:src="@android:drawable/ic_menu_today"
+                android:src="@drawable/abc_btn_check_to_on_mtrl_015"
                 app:tint="@color/azul_primario"
                 android:alpha="0.2" />
 
@@ -317,7 +315,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="12dp"
-                        android:src="@android:drawable/ic_menu_agenda"
+                        android:src="@drawable/ic_tasks"
                         app:tint="@color/white" />
                 </com.google.android.material.card.MaterialCardView>
                 <TextView
@@ -345,7 +343,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_manage"
+                    android:src="@drawable/ic_settings"
                     app:tint="@color/text_secondary" />
                 <TextView
                     android:layout_width="wrap_content"

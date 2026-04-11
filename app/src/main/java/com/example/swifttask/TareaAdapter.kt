@@ -44,7 +44,7 @@ class TareaAdapter(
         val cbTarea: CheckBox = view.findViewById(R.id.cbTarea)
         val viewPrioridad: View = view.findViewById(R.id.viewPrioridad)
         val tvTitulo: TextView = view.findViewById(R.id.tvTituloTarea)
-        val tvAsignatura: TextView = view.findViewById(R.id.tvAsignatura)
+        val tvCategoria: TextView = view.findViewById(R.id.tvCategoria)
         val tvFecha: TextView = view.findViewById(R.id.tvFecha)
         val btnEliminar: ImageButton = view.findViewById(R.id.btnEliminar)
     }
@@ -59,7 +59,7 @@ class TareaAdapter(
         val tarea = lista[position]
 
         holder.tvTitulo.text = tarea.titulo
-        holder.tvAsignatura.text = tarea.asignatura
+        holder.tvCategoria.text = tarea.categoria
         
         // --- LÓGICA DE FECHAS INTELIGENTES ---
         if (tarea.fechaLimite != holder.itemView.context.getString(R.string.sin_fecha)) {
@@ -132,7 +132,7 @@ class TareaAdapter(
 
         val isDarkMode = (holder.itemView.context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
 
-        when (tarea.asignatura) {
+        when (tarea.categoria) {
             "Matemáticas" -> {
                 colorEtiqueta = android.graphics.Color.parseColor(if (isDarkMode) "#4A1D1D" else "#FAD2D2")
                 colorTextoEtiqueta = android.graphics.Color.parseColor(if (isDarkMode) "#FCA5A5" else "#A50000")
@@ -155,8 +155,8 @@ class TareaAdapter(
             }
         }
 
-        holder.tvAsignatura.background?.mutate()?.setTint(colorEtiqueta)
-        holder.tvAsignatura.setTextColor(colorTextoEtiqueta)
+        holder.tvCategoria.background?.mutate()?.setTint(colorEtiqueta)
+        holder.tvCategoria.setTextColor(colorTextoEtiqueta)
 
         // Configuración del CheckBox
         holder.cbTarea.setOnCheckedChangeListener(null)

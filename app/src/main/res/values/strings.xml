@@ -35,6 +35,12 @@
     <string name="seleccionar_prioridad">Seleccionar prioridad</string>
     <string name="tu_progreso">Tu progreso hoy</string>
     <string name="porcentaje_progreso">%1$d%%</string>
+    <string name="no_hay_tareas">No hay tareas</string>
+    <string name="tareas_completadas">%1$d de %2$d completadas</string>
+    <string name="eliminar_tarea_tit">Eliminar Tarea</string>
+    <string name="confirmar_eliminar">¿Estás seguro de que quieres eliminar esta tarea?</string>
+    <string name="eliminar">Eliminar</string>
+    <string name="cancelar">Cancelar</string>
     <string name="editar_tarea">Editar Tarea</string>
     <string name="actualizar">Actualizar</string>
     <string name="guardar">Guardar</string>

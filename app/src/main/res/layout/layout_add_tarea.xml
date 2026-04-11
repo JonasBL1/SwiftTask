@@ -1,183 +1,260 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp"
-    android:paddingTop="24dp"
-    android:paddingBottom="16dp"
     android:background="@drawable/rounded_bottom_sheet">
 
-    <!-- Barra de arrastre superior -->
-    <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:background="@color/border_color" />
-
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp">
 
+        <!-- Barra de arrastre superior -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:background="@color/border_color" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tvTituloPanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nueva Tarea"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnCloseDialog"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/border_color"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@color/surface_app">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    app:tint="@color/text_primary" />
+            </com.google.android.material.card.MaterialCardView>
+        </RelativeLayout>
+
+        <!-- ¿QUÉ TIENES PENDIENTE? -->
         <TextView
-            android:id="@+id/tvTituloPanel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nueva Tarea"
-            android:textColor="@color/text_primary"
-            android:textSize="24sp"
+            android:layout_marginTop="24dp"
+            android:text="¿QUÉ TIENES PENDIENTE?"
+            android:textColor="@color/azul_primario"
+            android:textSize="12sp"
             android:textStyle="bold" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnCloseDialog"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_alignParentEnd="true"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="0dp"
-            app:strokeColor="@color/border_color"
-            app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_app">
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="8dp"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                app:tint="@color/text_primary" />
-        </com.google.android.material.card.MaterialCardView>
-    </RelativeLayout>
-
-    <!-- ¿QUÉ TIENES PENDIENTE? -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="¿QUÉ TIENES PENDIENTE?"
-        android:textColor="@color/azul_primario"
-        android:textSize="12sp"
-        android:textStyle="bold" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.FilledBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:boxBackgroundColor="@color/input_background"
-        app:boxStrokeWidth="0dp"
-        app:boxStrokeWidthFocused="0dp"
-        app:hintEnabled="false"
-        app:boxCornerRadiusTopStart="16dp"
-        app:boxCornerRadiusBottomStart="16dp"
-        app:boxCornerRadiusTopEnd="16dp"
-        app:boxCornerRadiusBottomEnd="16dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etNuevoTitulo"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ej. Terminar entrega de diseño UI"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:textColor="@color/text_primary"
-            android:inputType="textCapSentences" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="8dp"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
+            app:hintEnabled="false"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomEnd="16dp">
 
-    <!-- ASIGNATURA -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="ASIGNATURA"
-        android:textColor="@color/azul_primario"
-        android:textSize="12sp"
-        android:textStyle="bold" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNuevoTitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ej. Terminar entrega de diseño UI"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:textColor="@color/text_primary"
+                android:inputType="textCapSentences" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSeleccionarAsignatura"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:text="Seleccionar..."
-        android:textColor="@color/text_secondary"
-        android:gravity="start|center_vertical"
-        android:textAllCaps="false"
-        app:backgroundTint="@color/input_background"
-        app:cornerRadius="16dp"
-        app:icon="@android:drawable/arrow_down_float"
-        app:iconGravity="end"
-        app:iconTint="@color/text_secondary" />
+        <!-- CATEGORÍA -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="CATEGORÍA"
+            android:textColor="@color/azul_primario"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-    <!-- PRIORIDAD -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/prioridad"
-        android:textColor="@color/azul_primario"
-        android:textSize="12sp"
-        android:textStyle="bold" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSeleccionarCategoria"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="Seleccionar..."
+            android:textColor="@color/text_secondary"
+            android:gravity="start|center_vertical"
+            android:textAllCaps="false"
+            app:backgroundTint="@color/input_background"
+            app:cornerRadius="16dp"
+            app:icon="@android:drawable/arrow_down_float"
+            app:iconGravity="end"
+            app:iconTint="@color/text_secondary" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSeleccionarPrioridad"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/media"
-        android:textColor="@color/text_secondary"
-        android:gravity="start|center_vertical"
-        android:textAllCaps="false"
-        app:backgroundTint="@color/input_background"
-        app:cornerRadius="16dp"
-        app:icon="@android:drawable/btn_star"
-        app:iconGravity="end"
-        app:iconTint="@color/text_secondary" />
+        <!-- PRIORIDAD -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/prioridad"
+            android:textColor="@color/azul_primario"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-    <!-- FECHA -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="FECHA"
-        android:textColor="@color/azul_primario"
-        android:textSize="12sp"
-        android:textStyle="bold" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSeleccionarPrioridad"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/media"
+            android:textColor="@color/text_secondary"
+            android:gravity="start|center_vertical"
+            android:textAllCaps="false"
+            app:backgroundTint="@color/input_background"
+            app:cornerRadius="16dp"
+            app:icon="@android:drawable/btn_star"
+            app:iconGravity="end"
+            app:iconTint="@color/text_secondary" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSeleccionarFecha"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:text="Hoy, 18:00"
-        android:textColor="@color/text_secondary"
-        android:gravity="start|center_vertical"
-        android:textAllCaps="false"
-        app:backgroundTint="@color/input_background"
-        app:cornerRadius="16dp"
-        app:icon="@android:drawable/ic_menu_my_calendar"
-        app:iconGravity="end"
-        app:iconTint="@color/text_secondary" />
+        <!-- FECHA Y HORA -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp"
+            android:baselineAligned="false">
 
-    <!-- BOTÓN GUARDAR -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGuardarTarea"
-        android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:layout_marginTop="24dp"
-        android:text="@string/guardar"
-        android:textAllCaps="false"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        app:cornerRadius="16dp"
-        android:backgroundTint="@color/azul_primario"
-        app:elevation="2dp" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
 
-</LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FECHA"
+                    android:textColor="@color/azul_primario"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSeleccionarFecha"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="8dp"
+                    android:text="Hoy"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="start|center_vertical"
+                    android:textAllCaps="false"
+                    app:backgroundTint="@color/input_background"
+                    app:cornerRadius="16dp"
+                    app:icon="@android:drawable/ic_menu_my_calendar"
+                    app:iconGravity="end"
+                    app:iconTint="@color/text_secondary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HORA"
+                    android:textColor="@color/azul_primario"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSeleccionarHora"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="8dp"
+                    android:text="18:00"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="start|center_vertical"
+                    android:textAllCaps="false"
+                    app:backgroundTint="@color/input_background"
+                    app:cornerRadius="16dp"
+                    app:icon="@android:drawable/ic_lock_idle_alarm"
+                    app:iconGravity="end"
+                    app:iconTint="@color/text_secondary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- RECORDATORIO -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Activar recordatorio"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchRecordatorio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:thumbTint="@color/switch_thumb_color"
+                app:trackTint="@color/switch_track_color" />
+        </LinearLayout>
+
+        <!-- BOTÓN GUARDAR -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarTarea"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/guardar"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:cornerRadius="16dp"
+            android:backgroundTint="@color/azul_primario"
+            app:elevation="2dp" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

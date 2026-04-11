@@ -1,8 +1,8 @@
 package com.example.swifttask
 
 import android.content.Intent
-import com.google.firebase.auth.FirebaseAuth
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -10,28 +10,49 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import androidx.work.*
+import androidx.core.graphics.toColorInt
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.ExistingWorkPolicy
 import java.util.concurrent.TimeUnit
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
-
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var dbRef: DatabaseReference
     private lateinit var adapter: TareaAdapter
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Toast.makeText(this, "¡Notificaciones activadas!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "No recibirás recordatorios sin el permiso", Toast.LENGTH_LONG).show()
+        }
+    }
+
     // Listas para manejar los filtros
     private val listaTareasCompleta = mutableListOf<Tarea>()
     private val listaTareasVisibles = mutableListOf<Tarea>()
 
-    private var asignaturaSeleccionada = "Personal"
+    private var categoriaSeleccionada = "Personal"
     private var fechaSeleccionada = "Sin fecha"
+    private var horaSeleccionada = "08:00"
+    private var recordatorioActivado = false
     private var prioridadSeleccionada = "Media"
     private var filtroActual = "Todas"
     private var criterioOrdenacion = "Prioridad"
@@ -60,14 +81,19 @@ class MainActivity : AppCompatActivity() {
         val btnSettings = findViewById<android.view.View>(R.id.btnSettings)
         val btnMenu = findViewById<android.view.View>(R.id.btnMenu)
         val btnProfile = findViewById<android.view.View>(R.id.btnProfile)
-        val ivProfile = findViewById<android.widget.ImageView>(R.id.btnProfileImage) // Asumiendo que añadimos el ID
+        val ivProfile = findViewById<android.widget.ImageView>(R.id.btnProfileImage)
         val etBuscar = findViewById<android.widget.EditText>(R.id.etBuscar)
+
+        // Solicitar permisos de notificación (Android 13+)
+        solicitarPermisosNotificacion()
+        crearCanalNotificaciones()
 
         if (user != null) {
             user.photoUrl?.let {
                 com.bumptech.glide.Glide.with(this)
                     .load(it)
                     .placeholder(R.drawable.ic_user)
+                    .error(R.drawable.ic_user)
                     .circleCrop()
                     .into(ivProfile)
             }
@@ -91,8 +117,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnProfile.setOnClickListener {
-            val user = FirebaseAuth.getInstance().currentUser
-            val email = user?.email ?: "Usuario"
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val email = currentUser?.email ?: "Usuario"
             Toast.makeText(this, getString(R.string.sesion_de, email), Toast.LENGTH_SHORT).show()
         }
 
@@ -109,7 +135,6 @@ class MainActivity : AppCompatActivity() {
         // Configurar Swipe
         configurarSwipe(rvTareas)
 
-        // 5. Filtros - Eliminamos la lógica estática para que la maneje actualizarChipsCategorias()
         fabAgregar.setOnClickListener {
             mostrarDialogoNuevaTarea()
         }
@@ -127,7 +152,6 @@ class MainActivity : AppCompatActivity() {
         catRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 listaCategorias.clear()
-                // Añadir categorías por defecto si no existen o siempre como base
                 listaCategorias.add(Categoria("todas", "Todas"))
                 
                 for (catSnapshot in snapshot.children) {
@@ -137,7 +161,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 
-                // Si está vacío (primer inicio), crear las de defecto en Firebase
                 if (snapshot.childrenCount == 0L) {
                     crearCategoriasPorDefecto()
                 } else {
@@ -154,9 +177,9 @@ class MainActivity : AppCompatActivity() {
             .child(userId ?: "anonimo")
             .child("Categorias")
 
-        val cat1 = Categoria(catRef.push().key ?: "1", "Universidad", "#3B82F6")
-        val cat2 = Categoria(catRef.push().key ?: "2", "Personal", "#10B981")
-        
+        val cat1 = Categoria(catRef.push().key ?: "1", "Personal", "#3B82F6")
+        val cat2 = Categoria(catRef.push().key ?: "2", "Universidad", "#8B5CF6")
+
         catRef.child(cat1.id).setValue(cat1)
         catRef.child(cat2.id).setValue(cat2)
     }
@@ -172,9 +195,8 @@ class MainActivity : AppCompatActivity() {
             chip.isCheckable = true
             chip.isClickable = true
             
-            // Estilo
             chip.setChipBackgroundColorResource(android.R.color.transparent)
-            val strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#E2E8F0"))
+            val strokeColor = android.content.res.ColorStateList.valueOf("#E2E8F0".toColorInt())
             chip.chipStrokeColor = strokeColor
             chip.chipStrokeWidth = 2f
             chip.setTextColor(getColor(R.color.text_secondary))
@@ -190,8 +212,15 @@ class MainActivity : AppCompatActivity() {
                 if (isChecked) {
                     filtroActual = categoria.nombre
                     aplicarFiltro()
-                    actualizarChipsCategorias() // Para refrescar visualmente el estilo
+                    actualizarChipsCategorias()
                 }
+            }
+
+            chip.setOnLongClickListener {
+                if (categoria.nombre != "Todas") {
+                    mostrarDialogoEditarCategoria(categoria)
+                }
+                true
             }
             chipGroup.addView(chip)
         }
@@ -199,104 +228,83 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser == null) {
-            // Si no hay sesión, mandamos al usuario al Login
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
+        aplicarFiltro()
     }
 
     private fun aplicarFiltro() {
         listaTareasVisibles.clear()
-
-        val filtradasPorCategoria = if (filtroActual == "Todas") {
+        
+        val filtradas = if (filtroActual == "Todas") {
             listaTareasCompleta
         } else {
-            listaTareasCompleta.filter { it.asignatura == filtroActual }
+            listaTareasCompleta.filter { it.categoria == filtroActual }
         }
 
-        val filtradasFinales = if (queryBusqueda.isEmpty()) {
-            filtradasPorCategoria
+        val busqueda = if (queryBusqueda.isEmpty()) {
+            filtradas
         } else {
-            filtradasPorCategoria.filter { it.titulo.contains(queryBusqueda, ignoreCase = true) }
+            filtradas.filter { it.titulo.contains(queryBusqueda, ignoreCase = true) }
         }
 
-        listaTareasVisibles.addAll(filtradasFinales)
-
+        listaTareasVisibles.addAll(busqueda)
         ordenarTareas()
-        adapter.updateLista(listaTareasVisibles)
-
         actualizarContador()
+        
+        val layoutEmptyState = findViewById<View>(R.id.layoutEmptyState)
+        layoutEmptyState.visibility = if (listaTareasVisibles.isEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun ordenarTareas() {
         when (criterioOrdenacion) {
             "Prioridad" -> {
-                val prioridadMap = mapOf("Alta" to 1, "Media" to 2, "Baja" to 3)
-                listaTareasVisibles.sortWith(compareBy<Tarea> { it.completada }.thenBy { prioridadMap[it.prioridad] ?: 4 })
+                val orden = mapOf("Alta" to 1, "Media" to 2, "Baja" to 3)
+                listaTareasVisibles.sortBy { orden[it.prioridad] ?: 4 }
+            }
+            "Fecha" -> {
+                listaTareasVisibles.sortBy { it.fechaLimite }
             }
             "Nombre" -> {
-                listaTareasVisibles.sortWith(compareBy<Tarea> { it.completada }.thenBy { it.titulo.lowercase() })
+                listaTareasVisibles.sortBy { it.titulo.lowercase() }
             }
         }
+        adapter.updateLista(listaTareasVisibles)
     }
 
-    private fun mostrarMenuOrdenacion(view: android.view.View) {
+    private fun mostrarMenuOrdenacion(view: View) {
         val popup = android.widget.PopupMenu(this, view)
-        popup.menu.add(getString(R.string.orden_prioridad))
-        popup.menu.add(getString(R.string.orden_nombre))
+        popup.menu.add("Prioridad")
+        popup.menu.add("Fecha")
+        popup.menu.add("Nombre")
 
         popup.setOnMenuItemClickListener { item ->
-            criterioOrdenacion = when (item.title) {
-                getString(R.string.orden_prioridad) -> "Prioridad"
-                getString(R.string.orden_nombre) -> "Nombre"
-                else -> "Prioridad"
-            }
-            aplicarFiltro()
+            criterioOrdenacion = item.title.toString()
+            ordenarTareas()
             true
         }
         popup.show()
     }
 
     private fun actualizarContador() {
-        val total = listaTareasVisibles.size
-        val completadas = listaTareasVisibles.count { it.completada }
-        val pendientes = total - completadas
-        
         val tvTareaCount = findViewById<android.widget.TextView>(R.id.tvTareaCount)
-        tvTareaCount?.text = getString(R.string.tareas_pendientes, pendientes)
-
-        // Actualizar Barra de Progreso
         val progressTareas = findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.progressTareas)
         val tvPorcentaje = findViewById<android.widget.TextView>(R.id.tvPorcentaje)
-        
-        if (total > 0) {
-            val porcentaje = (completadas * 100) / total
-            val anteriorPorcentaje = progressTareas?.progress ?: 0
-            
-            progressTareas?.setProgress(porcentaje, true)
-            tvPorcentaje?.text = getString(R.string.porcentaje_progreso, porcentaje)
 
-            // DISPARAR CONFETI si llegamos al 100% y antes no estábamos ahí
-            if (porcentaje == 100 && anteriorPorcentaje < 100) {
+        val total = listaTareasVisibles.size
+        val completadas = listaTareasVisibles.count { it.completada }
+        
+        if (total == 0) {
+            tvTareaCount.text = getString(R.string.no_hay_tareas)
+            progressTareas.progress = 0
+            tvPorcentaje.text = "0%"
+        } else {
+            tvTareaCount.text = getString(R.string.tareas_completadas, completadas, total)
+            val porcentaje = (completadas * 100) / total
+            progressTareas.progress = porcentaje
+            tvPorcentaje.text = getString(R.string.porcentaje_progreso, porcentaje)
+            
+            if (completadas == total && total > 0) {
                 dispararConfeti()
             }
-        } else {
-            progressTareas?.setProgress(0, true)
-            tvPorcentaje?.text = "0%"
-        }
-
-        val layoutEmptyState = findViewById<android.view.View>(R.id.layoutEmptyState)
-        val rvTareas = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvTareas)
-
-        if (listaTareasVisibles.isEmpty()) {
-            layoutEmptyState?.visibility = android.view.View.VISIBLE
-            rvTareas?.visibility = android.view.View.GONE
-        } else {
-            layoutEmptyState?.visibility = android.view.View.GONE
-            rvTareas?.visibility = android.view.View.VISIBLE
         }
     }
 
@@ -305,59 +313,31 @@ class MainActivity : AppCompatActivity() {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val posicion = viewHolder.adapterPosition
-                val tarea = listaTareasVisibles[posicion]
-
-                // Vibración sutil al completar el swipe
-                viewHolder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                val position = viewHolder.adapterPosition
+                val tarea = listaTareasVisibles[position]
 
                 if (direction == ItemTouchHelper.RIGHT) {
-                    // Swipe Derecha: Completar/Descompletar
-                    tarea.completada = !tarea.completada
-                    actualizarTarea(tarea)
-                    val mensaje = if (tarea.completada) R.string.tarea_completada else R.string.tarea_pendiente
-                    Snackbar.make(recyclerView, mensaje, Snackbar.LENGTH_SHORT).show()
+                    // Completar / Descompletar
+                    val tareaActualizada = tarea.copy(completada = !tarea.completada)
+                    actualizarTarea(tareaActualizada)
                 } else {
-                    // Swipe Izquierda: Eliminar con opción de deshacer
-                    val tareaEliminada = tarea
-                    eliminarTarea(tarea)
-                    
-                    Snackbar.make(recyclerView, R.string.tarea_eliminada, Snackbar.LENGTH_LONG)
-                        .setAction(R.string.deshacer) {
-                            tareaEliminada.id?.let { id ->
-                                dbRef.child(id).setValue(tareaEliminada)
-                            }
-                        }.show()
+                    // Eliminar
+                    android.app.AlertDialog.Builder(this@MainActivity)
+                        .setTitle(R.string.eliminar_tarea_tit)
+                        .setMessage(R.string.confirmar_eliminar)
+                        .setPositiveButton(R.string.eliminar) { _, _ ->
+                            eliminarTarea(tarea)
+                        }
+                        .setNegativeButton(R.string.cancelar) { _, _ ->
+                            adapter.notifyItemChanged(position)
+                        }
+                        .show()
                 }
             }
 
-            override fun onChildDraw(
-                c: android.graphics.Canvas,
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                dX: Float,
-                dY: Float,
-                actionState: Int,
-                isCurrentlyActive: Boolean
-            ) {
-                val itemView = viewHolder.itemView
-                val p = android.graphics.Paint()
-
-                if (dX > 0) { // Swipe Derecha (Completar - Verde)
-                    p.color = android.graphics.Color.parseColor("#10B981")
-                    c.drawRect(
-                        itemView.left.toFloat(), itemView.top.toFloat(),
-                        itemView.left.toFloat() + dX, itemView.bottom.toFloat(), p
-                    )
-                } else if (dX < 0) { // Swipe Izquierda (Eliminar - Rojo)
-                    p.color = android.graphics.Color.parseColor("#EF4444")
-                    c.drawRect(
-                        itemView.right.toFloat() + dX, itemView.top.toFloat(),
-                        itemView.right.toFloat(), itemView.bottom.toFloat(), p
-                    )
-                }
-
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            override fun onChildDraw(canvas: android.graphics.Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+                // Implementación opcional de fondo de color al deslizar
+                super.onChildDraw(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
         }
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView)
@@ -380,29 +360,36 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun guardarTareaReal(nombre: String, asignatura: String, fecha: String, prioridad: String) {
+    private fun guardarTareaReal(nombre: String, categoria: String, fecha: String, hora: String, recordatorio: Boolean, prioridad: String) {
         val id = dbRef.push().key ?: return
         val nuevaTarea = Tarea(
             id = id,
             titulo = nombre,
-            asignatura = asignatura,
+            categoria = categoria,
             fechaLimite = fecha,
+            horaLimite = hora,
+            recordatorioActivado = recordatorio,
             prioridad = prioridad,
             esRepetitiva = false,
             completada = false
         )
         dbRef.child(id).setValue(nuevaTarea)
-        programarNotificacion(nuevaTarea)
+        if (recordatorio) {
+            programarNotificacion(nuevaTarea)
+        }
     }
 
     private fun eliminarTarea(tarea: Tarea) {
-        tarea.id?.let { dbRef.child(it).removeValue() }
+        tarea.id?.let { 
+            dbRef.child(it).removeValue()
+            cancelarNotificacion(it)
+        }
     }
 
     private fun actualizarTarea(tarea: Tarea) {
-        tarea.id?.let { 
+        tarea.id?.let {
             dbRef.child(it).setValue(tarea)
-            if (!tarea.completada) {
+            if (tarea.recordatorioActivado && !tarea.completada) {
                 programarNotificacion(tarea)
             } else {
                 cancelarNotificacion(it)
@@ -411,45 +398,68 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun programarNotificacion(tarea: Tarea) {
-        if (tarea.fechaLimite == getString(R.string.sin_fecha) || tarea.id == null) return
+        if (tarea.fechaLimite == getString(R.string.sin_fecha) || tarea.id == null || !tarea.recordatorioActivado) return
 
         try {
-            val sdf = SimpleDateFormat("d/M/yyyy", Locale.getDefault())
-            val fechaLimite = sdf.parse(tarea.fechaLimite) ?: return
+            val sdf = SimpleDateFormat("d/M/yyyy HH:mm", Locale.getDefault())
+            val fechaHoraString = "${tarea.fechaLimite} ${tarea.horaLimite}"
+            val fechaHoraLimite = sdf.parse(fechaHoraString) ?: return
             
-            // Programar para las 8:00 AM del día de vencimiento
             val calendar = Calendar.getInstance().apply {
-                time = fechaLimite
-                set(Calendar.HOUR_OF_DAY, 8)
-                set(Calendar.MINUTE, 0)
+                time = fechaHoraLimite
             }
 
-            val delay = calendar.timeInMillis - System.currentTimeMillis()
-            if (delay < 0) return // Ya pasó la hora de la notificación
+            val triggerTime = calendar.timeInMillis
+            if (triggerTime <= System.currentTimeMillis()) return
 
-            val data = Data.Builder()
-                .putString("titulo", tarea.titulo)
-                .putString("id", tarea.id)
-                .build()
+            val intent = Intent(this, AlarmReceiver::class.java).apply {
+                putExtra("titulo", tarea.titulo)
+                putExtra("id", tarea.id)
+            }
 
-            val notificationRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
-                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .setInputData(data)
-                .addTag(tarea.id)
-                .build()
-
-            WorkManager.getInstance(this).enqueueUniqueWork(
-                tarea.id,
-                ExistingWorkPolicy.REPLACE,
-                notificationRequest
+            val pendingIntent = android.app.PendingIntent.getBroadcast(
+                this,
+                tarea.id.hashCode(),
+                intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
             )
+
+            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    android.app.AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setExact(
+                    android.app.AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+                )
+            }
+            
+            android.util.Log.d("ALARM", "Alarma programada para: $fechaHoraString")
+            Toast.makeText(this, "Recordatorio programado", Toast.LENGTH_SHORT).show()
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
     private fun cancelarNotificacion(tareaId: String) {
-        WorkManager.getInstance(this).cancelUniqueWork(tareaId)
+        val intent = Intent(this, AlarmReceiver::class.java)
+        val pendingIntent = android.app.PendingIntent.getBroadcast(
+            this,
+            tareaId.hashCode(),
+            intent,
+            android.app.PendingIntent.FLAG_NO_CREATE or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+        if (pendingIntent != null) {
+            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            alarmManager.cancel(pendingIntent)
+        }
     }
 
     private fun dispararConfeti() {
@@ -466,7 +476,7 @@ class MainActivity : AppCompatActivity() {
         konfettiView.start(party)
     }
 
-    private fun mostrarDialogoNuevaCategoria(btnAsignatura: android.widget.Button) {
+    private fun mostrarDialogoNuevaCategoria(btnCategoria: android.widget.Button) {
         val builder = android.app.AlertDialog.Builder(this)
         builder.setTitle("Nueva Categoría")
 
@@ -487,8 +497,8 @@ class MainActivity : AppCompatActivity() {
                 val nuevaCat = Categoria(key, nombreCat, "#3B82F6")
                 
                 catRef.child(key).setValue(nuevaCat).addOnSuccessListener {
-                    asignaturaSeleccionada = nombreCat
-                    btnAsignatura.text = nombreCat
+                    categoriaSeleccionada = nombreCat
+                    btnCategoria.text = nombreCat
                     Toast.makeText(this, "Categoría creada", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -499,59 +509,64 @@ class MainActivity : AppCompatActivity() {
 
     private fun mostrarDialogoNuevaTarea(tareaAEditar: Tarea? = null) {
         val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
-        val view = layoutInflater.inflate(R.layout.layout_add_tarea, null)
+        val view = layoutInflater.inflate(R.layout.layout_add_tarea, findViewById(android.R.id.content), false)
         dialog.setContentView(view)
 
         val tvTituloPanel = view.findViewById<android.widget.TextView>(R.id.tvTituloPanel)
         val etTitulo = view.findViewById<android.widget.EditText>(R.id.etNuevoTitulo)
-        val btnAsignatura = view.findViewById<android.widget.Button>(R.id.btnSeleccionarAsignatura)
+        val btnCategoria = view.findViewById<android.widget.Button>(R.id.btnSeleccionarCategoria)
         val btnPrioridad = view.findViewById<android.widget.Button>(R.id.btnSeleccionarPrioridad)
         val btnFecha = view.findViewById<android.widget.Button>(R.id.btnSeleccionarFecha)
+        val btnHora = view.findViewById<android.widget.Button>(R.id.btnSeleccionarHora)
+        val switchRecordatorio = view.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switchRecordatorio)
         val btnGuardar = view.findViewById<android.widget.Button>(R.id.btnGuardarTarea)
         val btnClose = view.findViewById<android.view.View>(R.id.btnCloseDialog)
 
         btnClose.setOnClickListener { dialog.dismiss() }
 
-        // Si estamos editando, rellenamos los campos
         if (tareaAEditar != null) {
             tvTituloPanel.text = getString(R.string.editar_tarea)
             etTitulo.setText(tareaAEditar.titulo)
-            btnAsignatura.text = tareaAEditar.asignatura
+            btnCategoria.text = tareaAEditar.categoria
             btnPrioridad.text = tareaAEditar.prioridad
             btnFecha.text = tareaAEditar.fechaLimite
+            btnHora.text = tareaAEditar.horaLimite
+            switchRecordatorio.isChecked = tareaAEditar.recordatorioActivado
             btnGuardar.text = getString(R.string.actualizar)
             
-            asignaturaSeleccionada = tareaAEditar.asignatura
+            categoriaSeleccionada = tareaAEditar.categoria
             prioridadSeleccionada = tareaAEditar.prioridad
             fechaSeleccionada = tareaAEditar.fechaLimite
+            horaSeleccionada = tareaAEditar.horaLimite
+            recordatorioActivado = tareaAEditar.recordatorioActivado
         } else {
             tvTituloPanel.text = getString(R.string.agregar_tarea)
             btnGuardar.text = getString(R.string.guardar)
-            // Resetear valores para nueva tarea
-            asignaturaSeleccionada = getString(R.string.personal)
+            categoriaSeleccionada = getString(R.string.personal)
             prioridadSeleccionada = getString(R.string.media)
             fechaSeleccionada = getString(R.string.sin_fecha)
+            horaSeleccionada = "08:00"
+            recordatorioActivado = false
+            btnHora.text = horaSeleccionada
+            switchRecordatorio.isChecked = false
         }
 
-        btnAsignatura.setOnClickListener {
-            val popup = android.widget.PopupMenu(this, btnAsignatura)
-            
-            // Usar categorías dinámicas (excluyendo "Todas")
-            val nombresCategorias = listaCategorias
-                .filter { it.nombre != "Todas" }
-                .map { it.nombre }
-                .toMutableList()
-            
-            nombresCategorias.add("+ Nueva Categoría...")
-            
-            nombresCategorias.forEach { nombre -> popup.menu.add(nombre) }
-
+        btnCategoria.setOnClickListener {
+            val popup = android.widget.PopupMenu(this, btnCategoria)
+            val categoriasParaMenu = listaCategorias.filter { it.nombre != "Todas" }
+            for (cat in categoriasParaMenu) {
+                popup.menu.add(cat.nombre)
+            }
+            popup.menu.add("+ Nueva Categoría...")
+            popup.menu.add("⚙️ Editar Categorías...")
             popup.setOnMenuItemClickListener { item ->
-                if (item.title == "+ Nueva Categoría...") {
-                    mostrarDialogoNuevaCategoria(btnAsignatura)
-                } else {
-                    asignaturaSeleccionada = item.title.toString()
-                    btnAsignatura.text = asignaturaSeleccionada
+                when (val title = item.title.toString()) {
+                    "+ Nueva Categoría..." -> mostrarDialogoNuevaCategoria(btnCategoria)
+                    "⚙️ Editar Categorías..." -> mostrarDialogoGestionCategorias()
+                    else -> {
+                        categoriaSeleccionada = title
+                        btnCategoria.text = categoriaSeleccionada
+                    }
                 }
                 true
             }
@@ -562,7 +577,6 @@ class MainActivity : AppCompatActivity() {
             val popup = android.widget.PopupMenu(this, btnPrioridad)
             val prioridades = listOf(getString(R.string.alta), getString(R.string.media), getString(R.string.baja))
             prioridades.forEach { p -> popup.menu.add(p) }
-
             popup.setOnMenuItemClickListener { item ->
                 prioridadSeleccionada = item.title.toString()
                 btnPrioridad.text = prioridadSeleccionada
@@ -572,29 +586,43 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnFecha.setOnClickListener {
-            val calendario = java.util.Calendar.getInstance()
-            val year = calendario.get(java.util.Calendar.YEAR)
-            val month = calendario.get(java.util.Calendar.MONTH)
-            val day = calendario.get(java.util.Calendar.DAY_OF_MONTH)
-
+            val calendario = Calendar.getInstance()
+            val year = calendario.get(Calendar.YEAR)
+            val month = calendario.get(Calendar.MONTH)
+            val day = calendario.get(Calendar.DAY_OF_MONTH)
             val dpd = android.app.DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
                 fechaSeleccionada = "$selectedDay/${selectedMonth + 1}/$selectedYear"
                 btnFecha.text = fechaSeleccionada
             }, year, month, day)
-
             dpd.show()
+        }
+
+        btnHora.setOnClickListener {
+            val calendario = Calendar.getInstance()
+            val hour = if (horaSeleccionada.contains(":")) horaSeleccionada.split(":")[0].toInt() else calendario.get(Calendar.HOUR_OF_DAY)
+            val minute = if (horaSeleccionada.contains(":")) horaSeleccionada.split(":")[1].toInt() else calendario.get(Calendar.MINUTE)
+            
+            val tpd = android.app.TimePickerDialog(this, { _, selectedHour, selectedMinute ->
+                horaSeleccionada = String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute)
+                btnHora.text = horaSeleccionada
+            }, hour, minute, true)
+            tpd.show()
         }
 
         btnGuardar.setOnClickListener {
             val nombre = etTitulo.text.toString().trim()
+            val estaActivado = switchRecordatorio.isChecked
+            
             if (nombre.isNotEmpty()) {
                 if (tareaAEditar == null) {
-                    guardarTareaReal(nombre, asignaturaSeleccionada, fechaSeleccionada, prioridadSeleccionada)
+                    guardarTareaReal(nombre, categoriaSeleccionada, fechaSeleccionada, horaSeleccionada, estaActivado, prioridadSeleccionada)
                 } else {
                     val tareaActualizada = tareaAEditar.copy(
                         titulo = nombre,
-                        asignatura = asignaturaSeleccionada,
+                        categoria = categoriaSeleccionada,
                         fechaLimite = fechaSeleccionada,
+                        horaLimite = horaSeleccionada,
+                        recordatorioActivado = estaActivado,
                         prioridad = prioridadSeleccionada
                     )
                     actualizarTarea(tareaActualizada)
@@ -604,7 +632,120 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.escribe_un_titulo), Toast.LENGTH_SHORT).show()
             }
         }
-
         dialog.show()
     }
-} // Cierra MainActivity
+
+    private fun mostrarDialogoGestionCategorias() {
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle("Editar Categorías")
+        val categoriasNombres = listaCategorias.filter { it.nombre != "Todas" }.map { it.nombre }.toTypedArray()
+        builder.setItems(categoriasNombres) { _, which ->
+            val categoriaElegida = listaCategorias.filter { it.nombre != "Todas" }[which]
+            mostrarDialogoEditarCategoria(categoriaElegida)
+        }
+        builder.setNegativeButton("Cerrar") { dialog, _ -> dialog.dismiss() }
+        builder.show()
+    }
+
+    private fun mostrarDialogoEditarCategoria(categoria: Categoria) {
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle("Editar: ${categoria.nombre}")
+        val input = android.widget.EditText(this)
+        input.setText(categoria.nombre)
+        input.setPadding(50, 40, 50, 40)
+        builder.setView(input)
+        builder.setPositiveButton("Actualizar") { _, _ ->
+            val nuevoNombre = input.text.toString().trim()
+            if (nuevoNombre.isNotEmpty() && nuevoNombre != categoria.nombre) {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                val catRef = FirebaseDatabase.getInstance().getReference("Usuarios").child(userId ?: "anonimo").child("Categorias")
+                catRef.child(categoria.id).child("nombre").setValue(nuevoNombre)
+                actualizarTareasConNuevaCategoria(categoria.nombre, nuevoNombre)
+                Toast.makeText(this, "Categoría actualizada", Toast.LENGTH_SHORT).show()
+            }
+        }
+        builder.setNeutralButton("Eliminar") { _, _ ->
+            if (categoria.nombre == "Personal" || categoria.nombre == "Universidad") {
+                Toast.makeText(this, "No se pueden eliminar las categorías base", Toast.LENGTH_SHORT).show()
+            } else {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                FirebaseDatabase.getInstance().getReference("Usuarios").child(userId ?: "anonimo").child("Categorias").child(categoria.id).removeValue()
+                actualizarTareasConNuevaCategoria(categoria.nombre, "Personal")
+                Toast.makeText(this, "Categoría eliminada", Toast.LENGTH_SHORT).show()
+            }
+        }
+        builder.setNegativeButton("Cancelar") { dialog, _ -> dialog.cancel() }
+        builder.show()
+    }
+
+    private fun actualizarTareasConNuevaCategoria(viejoNombre: String, nuevoNombre: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val tareasRef = FirebaseDatabase.getInstance().getReference("Usuarios").child(userId ?: "anonimo").child("Tareas")
+        tareasRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (tareaSnapshot in snapshot.children) {
+                    val catTarea = tareaSnapshot.child("categoria").value as? String
+                    if (catTarea == viejoNombre) {
+                        tareaSnapshot.ref.child("categoria").setValue(nuevoNombre)
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun solicitarPermisosNotificacion() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permiso = Manifest.permission.POST_NOTIFICATIONS
+            when {
+                ContextCompat.checkSelfPermission(this, permiso) == PackageManager.PERMISSION_GRANTED -> {
+                    // Ya tiene permiso
+                }
+                ActivityCompat.shouldShowRequestPermissionRationale(this, permiso) -> {
+                    // El usuario lo denegó una vez, explicamos por qué es necesario
+                    android.app.AlertDialog.Builder(this)
+                        .setTitle("Permiso de Notificaciones")
+                        .setMessage("Necesitamos este permiso para avisarte cuando tus tareas venzan.")
+                        .setPositiveButton("Aceptar") { _, _ ->
+                            requestPermissionLauncher.launch(permiso)
+                        }
+                        .setNegativeButton("No, gracias", null)
+                        .show()
+                }
+                else -> {
+                    // Pedir por primera vez
+                    requestPermissionLauncher.launch(permiso)
+                }
+            }
+        }
+
+        // Alarmas exactas (Android 12+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                android.app.AlertDialog.Builder(this)
+                    .setTitle("Alarmas Exactas")
+                    .setMessage("Para que los recordatorios suenen al instante, necesitamos este permiso.")
+                    .setPositiveButton("Configurar") { _, _ ->
+                        startActivity(Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                    }
+                    .setNegativeButton("Omitir", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun crearCanalNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = getString(R.string.notificacion_canal_id)
+            val name = getString(R.string.notificacion_canal_nombre)
+            val descriptionText = "Canal para recordatorios de tareas"
+            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
+            val channel = android.app.NotificationChannel(channelId, name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+}

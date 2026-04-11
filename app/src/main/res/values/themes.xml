@@ -6,7 +6,13 @@
         <item name="android:windowBackground">@color/background_app</item>
         <item name="android:statusBarColor">@color/background_app</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+
+        <item name="switch_thumb_color">@color/switch_thumb_selector</item>
+        <item name="switch_track_color">@color/switch_track_selector</item>
     </style>
+
+    <attr name="switch_thumb_color" format="color" />
+    <attr name="switch_track_color" format="color" />
 
     <style name="Theme.SwiftTask" parent="Base.Theme.SwiftTask" />
 
